@@ -53,7 +53,7 @@ This plugin is built to support the following activities for tracking if an agen
 
 If these activity names suit your requirements, you simply need to add them to your TaskRouter configuration in the Twilio Console -> TaskRouter -> [Workspace] -> Activities. Please pay attention to the `Available` boolean following each activity name above and use that same boolean value when creating the activity in the Twilio Console.
 
-If you'd prefer to use different names for these activities, after creating the desired activities in the Twilio Console, you will need to change the activity string names referenced in the plugin [`enums/index.js`](enums/index.js) module, `Activity` object:
+If you'd prefer to use different names for these activities, after creating the desired activities in the Twilio Console, you will need to change the activity string names referenced in the plugin [`enums/index.js`](src/enums/index.js) module, `Activity` object:
 
 ```
 export const Activity = {
