@@ -39,21 +39,21 @@ This section provides visual examples of what to expect for each feature above.
 This plugin is built to support the following activities for tracking if an agent has an assigned task:
 
 * **On a Task** (`Available: true`)
-  * This is an Available activity and is used after accepting an inbound task from the queue, or as soon as an outbound call is placed while in an Available activity
+  * This is an Available activity and is used after accepting an inbound task from the queue, or when an outbound call is placed while in an Available activity
   * Indicates the worker has at least one assigned task not in a `wrapping` state
 * **Wrap Up** (`Available: true`)
   * This is an Available activity and is used when all assigned tasks are in a `wrapping` state
-  * In the case of an outbound call task, this is used if the outbound call is placed while in an Available activity
+  * In the case of an outbound call task in `wrapping` state, this is used if the outbound call was placed while in an Available activity
 * **On a Task, No ACD** (`Available: false`)
-  * This is a non-Available activity and is used as soon as an outbound call is placed while in a non-Available activity
-  * Using a non-Available activity in this scenario ensures the worker doesn't receive any unexpected tasks from the queue
+  * This is a non-Available activity and is used when an outbound call is placed while in a non-Available activity
+  * Using a non-Available activity in this scenario ensures the worker doesn't receive any unexpected tasks from the queue when their activity is automatically changed
 * **Wrap Up, No ACD** (`Available: false`)
-  * This is a non-Available activity and is used when an outbound call placed while in a non-Available activity enters the `wrapping` state and the worker has no other non-wrapping assigned tasks
-  * Using a non-Available activity in this scenario ensures the worker doesn't receive any unexpected tasks from the queue
+  * This is a non-Available activity and is used when an outbound call that was placed while in a non-Available activity enters the `wrapping` state and the worker has no other non-wrapping assigned tasks
+  * Using a non-Available activity in this scenario ensures the worker doesn't receive any unexpected tasks from the queue when their activity is automatically changed
 
 If these activity names suit your requirements, you simply need to add them to your TaskRouter configuration in the Twilio Console -> TaskRouter -> [Workspace] -> Activities. Please pay attention to the `Available` boolean following each activity name above and use that same boolean value when creating the activity in the Twilio Console.
 
-If you'd prefer to use different names for these activities, after creating the desired activities, you will need to change the activity string names referenced in the plugin [`enums/index.js`](enums/index.js) module, `Activity` object:
+If you'd prefer to use different names for these activities, after creating the desired activities in the Twilio Console, you will need to change the activity string names referenced in the plugin [`enums/index.js`](enums/index.js) module, `Activity` object:
 
 ```
 export const Activity = {
@@ -76,6 +76,8 @@ export const Activity = {
   wrapupNoAcd: 'After Call Work, No ACD'
 };
 ```
+
+If you are using your own activity names, please ensure the `Available` boolean values in the activity list at the start of this section are maintained. For example, "After Call Work" would still be `Available: true`, while "After Call Work, No ACD" would still be `Available: false`.
 
 ## Flex Plugin
 
