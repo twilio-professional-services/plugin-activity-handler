@@ -5,12 +5,6 @@ class WorkerState {
 
   get workerClient() { return this._manager.workerClient; }
 
-  //TODO: Evaluate for removal
-  get workerSid() { return this.workerClient.sid; }
-
-  //TODO: Evaluate for removal
-  get workerAttributes() { return this.workerClient.attributes; }
-
   get workerActivity() { return this.workerClient.activity; }
 
   get workerActivityName() { return this.workerActivity?.name; }

@@ -11,7 +11,9 @@ export const ReservationEvents = {
 export const Activity = {
   available: 'Available',
   onATask: 'On a Task',
-  wrapup: 'Wrap Up'
+  onATaskNoAcd: 'On a Task, No ACD',
+  wrapup: 'Wrap Up',
+  wrapupNoAcd: 'Wrap Up, No ACD'
 };
 
 export const FlexNotification = {

@@ -15,15 +15,25 @@ const availableActivity = FlexState.getActivityByName(Activity.available);
 // Update 'Activity.onATask' value to match the activity name you're
 // using to indicate an agent has an active task
 const onTaskActivity = FlexState.getActivityByName(Activity.onATask);
+// Update 'Activity.onATaskNoAcd' value to match the activity name you're
+// using to indicate an agent's tasks are on an outbound task started from
+// a non-Available activity
+const onTaskNoAcdActivity = FlexState.getActivityByName(Activity.onATaskNoAcd);
 // Update 'Activity.wrapup' value to match the activity name you're
 // using to indicate an agent's tasks are in wrapup status
 const wrapupActivity = FlexState.getActivityByName(Activity.wrapup);
+// Update 'Activity.wrapupNoAcd' value to match the activity name you're
+// using to indicate an agent's tasks are in wrapup status when they started
+// the first task (outbound cal) from a non-Available activity
+const wrapupNoAcdActivity = FlexState.getActivityByName(Activity.wrapupNoAcd);
 
 // The activities in this array can only be set programmatically and will
 // not be stored as pending activities to switch the user back to
 const systemActivities = [
   Activity.onATask,
-  Activity.wrapup
+	Activity.onATaskNoAcd,
+  Activity.wrapup,
+	Activity.wrapupNoAcd
 ];
 
 //#region Manager event listeners and handlers
@@ -41,10 +51,10 @@ const shouldStoreCurrentActivitySid = () => {
 
 const storeCurrentActivitySidIfNeeded = () => {
 	if (shouldStoreCurrentActivitySid()) {
-		const { workerActivityName, workerActivitySid } = WorkerState;
+		const { workerActivity } = WorkerState;
 
-		console.debug('Storing current activity as previous activity:', workerActivityName);
-		FlexState.storePendingActivityChange(workerActivityName, workerActivitySid);
+		console.debug('Storing current activity as previous activity:', workerActivity.name);
+		FlexState.storePendingActivityChange(WorkerState.workerActivity);
 	}
 }
 
@@ -87,10 +97,10 @@ const setWorkerActivity = (newActivitySid, clearPendingActivity) => {
 	}
 }
 
-const delayActivityChange = (activityName, activitySid) => {
-	Notifications.showNotification(FlexNotification.activityChangeDelayed, { activityName });
+const delayActivityChange = (activity) => {
+	Notifications.showNotification(FlexNotification.activityChangeDelayed, { activityName: activity.name });
 
-	FlexState.storePendingActivityChange(activityName, activitySid, true);
+	FlexState.storePendingActivityChange(activity, true);
 }
 
 const validateAndSetWorkerActivity = () => {
@@ -107,18 +117,33 @@ const validateAndSetWorkerActivity = () => {
   const { workerActivitySid, workerActivityName } = WorkerState;
   
 	if(!FlexState.hasLiveCallTask && FlexState.hasWrappingTask) {
-		console.log('Resetting "Wrap Up" Activity from:', workerActivityName);
-		setWorkerActivity(wrapupActivity?.sid);
+		const targetActivity = pendingActivity?.available
+			? wrapupActivity
+			: wrapupNoAcdActivity;
+
+		console.log(`Resetting "${targetActivity.name}" Activity from:`, workerActivityName);
+		
+		setWorkerActivity(targetActivity?.sid);
 	}
-	else if (workerActivitySid === wrapupActivity?.sid && !FlexState.hasWrappingTask) {
-		if (pendingActivity) {
-			console.log(`Setting worker from "${wrapupActivity?.name}" to pending activity:`, pendingActivity?.name);
-			setWorkerActivity(pendingActivity?.sid, true);
-		}
-		else {
-			console.log(`Setting worker from "${wrapupActivity?.name}" to default activity:`, availableActivity?.name);
-			setWorkerActivity(availableActivity?.sid);
-		}
+	else if ((workerActivitySid === wrapupActivity?.sid || workerActivitySid === wrapupNoAcdActivity?.sid)
+		&& !FlexState.hasWrappingTask)
+	{
+		const targetActivity = pendingActivity ? pendingActivity : availableActivity;
+
+		console.log(`Setting worker from "${workerActivityName}" to `
+			+ `${pendingActivity ? 'pending' : 'default'} activity:`, targetActivity?.name);
+		
+		setWorkerActivity(targetActivity?.sid, pendingActivity ? true : false);
+	}
+	else if ((workerActivitySid === onTaskActivity?.sid || workerActivitySid === onTaskNoAcdActivity?.sid)
+		&& !FlexState.hasActiveTask
+	) {
+		const targetActivity = pendingActivity ? pendingActivity : availableActivity;
+
+		console.log(`Setting worker from "${workerActivityName}" to `
+			+ `${pendingActivity ? 'pending' : 'default'} activity:`, targetActivity?.name);
+		
+		setWorkerActivity(targetActivity?.sid, pendingActivity ? true : false);
 	}
 	else if (workerActivitySid === FlexState.offlineActivitySid && !FlexState.hasWrappingTask) {
 		FlexState.clearPendingActivityChange();
@@ -142,16 +167,26 @@ Actions.addListener('beforeSetActivity', (payload, abortFunction) => {
   }
   else if (FlexState.hasActiveCallTask || FlexState.hasWrappingTask) {
     abortFunction();
-    delayActivityChange(activityName, activitySid);
+		const targetActivity = FlexState.getActivityBySid(activitySid);
+    delayActivityChange(targetActivity);
   }
 });
 
 Actions.addListener('beforeStartOutboundCall', async () => {
+	// For outbound calls, the agent is immediately joined to the conference
+  // and hearing ring tone before the reservation is accepted. Also, we can't
+	// change a worker's activity if there's a pending reservation. For those
+	// two reasons, we need to change the worker's activity before the outbound
+	// call is initiated.
 	storeCurrentActivitySidIfNeeded();
 
-	setWorkerActivity(onTaskActivity?.sid);
+	const targetActivity = WorkerState.workerActivity.available
+		? onTaskActivity
+		: onTaskNoAcdActivity;
 
-	await WorkerState.waitForWorkerActivityChange(onTaskActivity?.sid);
+	setWorkerActivity(targetActivity?.sid);
+	await WorkerState.waitForWorkerActivityChange(targetActivity?.sid);
+
 });
 //#endregion Flex Action listeners and handlers
 
@@ -171,7 +206,11 @@ const handleReservationAccept = async (reservation) => {
   
 	storeCurrentActivitySidIfNeeded();
 
-	setWorkerActivity(onTaskActivity?.sid);
+	const targetActivity = WorkerState.workerActivity.available
+		? onTaskActivity
+		: onTaskNoAcdActivity;
+
+	setWorkerActivity(targetActivity?.sid);
 }
 
 const handleReservationWrapup = async (reservation) => {
@@ -184,7 +223,11 @@ const handleReservationWrapup = async (reservation) => {
 		return;
 	}
 
-  setWorkerActivity(wrapupActivity?.sid);
+	const targetActivity = WorkerState.workerActivity.available
+		? wrapupActivity
+		: wrapupNoAcdActivity;
+
+  setWorkerActivity(targetActivity?.sid);
 }
 
 const handleReservationEnded = async (reservation, eventType) => {
@@ -259,15 +302,6 @@ const handleReservationCreated = async (reservation) => {
 	handleNewReservation(reservation);
 
   storeCurrentActivitySidIfNeeded();
-
-  // For outbound calls, the agent is immediately joined to the conference
-  // and hearing ring tone before the reservation is accepted, so we need
-  // to change their activity as soon as the outbound reservation is created
-  const task = TaskHelper.getTaskByTaskSid(reservation.sid);
-  console.debug('isInitialOutboundAttemptTask:', TaskHelper.isInitialOutboundAttemptTask(task));
-  if (TaskHelper.isInitialOutboundAttemptTask(task)) {
-    setWorkerActivity(onTaskActivity?.sid);
-  }
 }
 
 manager.workerClient.on('reservationCreated', handleReservationCreated);
