@@ -1,16 +1,16 @@
 # Flex Activity Handler Plugin
 
-Twilio Flex Plugins allow you to customize the appearance and behavior of [Twilio Flex](https://www.twilio.com/flex). If you want to learn more about the capabilities and how to use the API, check out our [Flex documentation](https://www.twilio.com/docs/flex).
+>Twilio Flex Plugins allow you to customize the appearance and behavior of [Twilio Flex](https://www.twilio.com/flex). If you want to learn more about the capabilities and how to use the API, check out our [Flex documentation](https://www.twilio.com/docs/flex).
 
 # Overview
 
 This plugin addresses a few common needs in many contact centers:
 
-1. Changing the worker's activity when they're handling tasks and when their tasks are in wrapup.
-    - This makes it easier to monitor what workers are doing in realtime, and improves workforce management visibility in Flex Insights for historical reporting
-1. Ability to define activities that should not be manually selected, such as the activities used to indicate the worker is handling tasks or in wrapup
-1. Preventing the worker from changing their activity while they're on a task, delaying that activity change until after they've completed their tasks
-    - Changing to another activity like "Break" while the agent is actively handling tasks can result in inaccurate activity based reporting. Preventing that change until they're actually complete with their tasks aids in reporting and monitoring accuracy.
+* Changing the worker's activity when they're handling tasks and when their tasks are in wrapup.
+  * This makes it easier to monitor what workers are doing in realtime, and improves workforce management visibility in Flex Insights for historical reporting
+* Ability to define activities that should not be manually selected, such as the activities used to indicate the worker is handling tasks or in wrapup
+* Preventing the worker from changing their activity while they're on a task, delaying that activity change until after they've completed their tasks
+  * Changing to another activity like "Break" while the agent is actively handling tasks can result in inaccurate activity based reporting. Preventing that change until they're actually complete with their tasks aids in reporting and monitoring accuracy.
 
 # Demos
 
