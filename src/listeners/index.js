@@ -53,7 +53,7 @@ const storeCurrentActivitySidIfNeeded = () => {
 	if (shouldStoreCurrentActivitySid()) {
 		const { workerActivity } = WorkerState;
 
-		console.debug('Storing current activity as previous activity:', workerActivity.name);
+		console.debug('Storing current activity as pending activity:', workerActivity.name);
 		FlexState.storePendingActivityChange(WorkerState.workerActivity);
 	}
 }
@@ -188,6 +188,16 @@ Actions.addListener('beforeStartOutboundCall', async () => {
 	await WorkerState.waitForWorkerActivityChange(targetActivity?.sid);
 
 });
+
+Actions.addListener('beforeCompleteTask', async () => {
+	const pendingActivity = FlexState.pendingActivity;
+
+	if (pendingActivity) {
+		console.debug('beforeCompleteTask, Setting worker to pending activity', pendingActivity.name);
+		setWorkerActivity(pendingActivity.sid, true);
+		await WorkerState.waitForWorkerActivityChange(pendingActivity.sid);
+	}
+})
 //#endregion Flex Action listeners and handlers
 
 //#region Reservation listeners and handlers
@@ -244,10 +254,12 @@ const handleReservationEnded = async (reservation, eventType) => {
 	}
 
 	if (pendingActivity) {
-		console.debug('handleReservationEnded, Setting worker to stored activity', pendingActivity.name);
+		console.debug('handleReservationEnded, Setting worker to pending activity', pendingActivity.name);
 		setWorkerActivity(pendingActivity.sid, true);
-	} else {
-		console.debug('handleReservationEnded, No pending activity. Setting worker to default activity:', availableActivity?.name);
+	} else if (systemActivities.includes(WorkerState.workerActivityName)) {
+		console.debug('handleReservationEnded, No pending activity and current activity '
+			+ `"${WorkerState.workerActivityName}" is a system activity. Setting worker to `
+			+ 'default activity:', availableActivity?.name);
 		setWorkerActivity(availableActivity?.sid);
 	}
 }
