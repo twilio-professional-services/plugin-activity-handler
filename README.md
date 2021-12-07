@@ -8,6 +8,8 @@ This plugin addresses a few common needs in many contact centers:
 
 * Changing the worker's activity when they're handling tasks and when their tasks are in wrapup.
   * This makes it easier to monitor what workers are doing in realtime, and improves workforce management visibility in Flex Insights for historical reporting
+* Changing the worker's activity to a default activity upon login
+  * Again, helps with real-time workforce management visibility and allows for more accurate reporting on post-login/pre-Available duration
 * Ability to define activities that should not be manually selected, such as the activities used to indicate the worker is handling tasks or in wrapup
 * Preventing the worker from changing their activity while they're on a task, delaying that activity change until after they've completed their tasks
   * Changing to another activity like "Break" while the agent is actively handling tasks can result in inaccurate activity based reporting. Preventing that change until they're actually complete with their tasks aids in reporting and monitoring accuracy.

@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "postinstall": "flex-plugin pre-script-check"
+    "postinstall": "flex-plugin pre-script-check",
+    "lazy-deploy": "twilio flex:plugins:deploy --major --changelog 'Lazy change description' --description 'Lazy plugin description'"
   },
   "dependencies": {
     "flex-plugin-scripts": "^4.3.18-beta.0",
