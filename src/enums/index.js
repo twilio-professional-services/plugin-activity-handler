@@ -10,6 +10,7 @@ export const ReservationEvents = {
 
 export const Activity = {
   available: 'Available',
+  defaultLoggedIn: 'Unavailable Default',
   onATask: 'On a Task',
   onATaskNoAcd: 'On a Task, No ACD',
   wrapup: 'Wrap Up',

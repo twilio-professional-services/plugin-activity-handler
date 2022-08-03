@@ -12,6 +12,11 @@ const manager = Manager.getInstance();
 const reservationListeners = new Map();
 
 const availableActivity = FlexState.getActivityByName(Activity.available);
+
+// Update 'Activity.defaultLoggedIn' value to match the activity name you're
+// using to indicate an agent has logged into Flex, but not selected an
+// activity
+const defaultLoggedInActivity = FlexState.getActivityByName(Activity.defaultLoggedIn);
 // Update 'Activity.onATask' value to match the activity name you're
 // using to indicate an agent has an active task
 const onTaskActivity = FlexState.getActivityByName(Activity.onATask);
@@ -30,6 +35,7 @@ const wrapupNoAcdActivity = FlexState.getActivityByName(Activity.wrapupNoAcd);
 // The activities in this array can only be set programmatically and will
 // not be stored as pending activities to switch the user back to
 const systemActivities = [
+  Activity.defaultLoggedIn,
   Activity.onATask,
 	Activity.onATaskNoAcd,
   Activity.wrapup,
@@ -146,7 +152,9 @@ const validateAndSetWorkerActivity = () => {
 		setWorkerActivity(targetActivity?.sid, pendingActivity ? true : false);
 	}
 	else if (workerActivitySid === FlexState.offlineActivitySid && !FlexState.hasWrappingTask) {
-		FlexState.clearPendingActivityChange();
+		// Assume fresh login with no ongoing tasks. Move to Default activity and clear pending
+		// activities if any
+		setWorkerActivity(defaultLoggedInActivity?.sid, true);
 	}
 }
 //#endregion Supporting functions
