@@ -1,0 +1,20 @@
+{
+  "name": "plugin-activity-handler",
+  "version": "5.0.0",
+  "private": true,
+  "scripts": {
+    "postinstall": "flex-plugin pre-script-check"
+  },
+  "dependencies": {
+    "@twilio/flex-plugin-scripts": "5.0.5",
+    "debug": "^4.3.4",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "@emotion/react": "^11.1.5",
+    "@emotion/styled": "^11.1.5"
+  },
+  "devDependencies": {
+    "@twilio/flex-ui": "^2.0.0-beta.1",
+    "react-test-renderer": "17.0.2"
+  }
+}
